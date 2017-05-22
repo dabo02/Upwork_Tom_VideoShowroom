@@ -26,7 +26,6 @@
 	<script type="text/javascript" src="/static/js/noty/layouts/topLeft.js"></script>
 	<script type="text/javascript" src="/static/js/noty/layouts/topRight.js"></script>
 	<script type="text/javascript" src="/static/js/noty/layouts/topCenter.js"></script>
-	
 	<!-- You can add more layouts if you want -->
 	<script type="text/javascript" src="/static/js/noty/themes/default.js"></script>
     <!-- <script type="text/javascript" src="assets/js/dash-noty.js"></script> This is a Noty bubble when you init the theme-->
@@ -70,6 +69,7 @@
 
     });
 
+
     $(window).load(function () {
 
         $('.flexslider').flexslider({
@@ -81,7 +81,7 @@
         });
     });
 
-</script>    
+</script>
   </head>
   <body>
   
@@ -117,12 +117,17 @@
       <!-- USER PROFILE BLOCK -->
         <div class="col-sm-3 col-lg-3">
       		<div class="dash-unit">
-	      		<dtitle>User Profile</dtitle>
+	      		<dtitle>Test Console</dtitle>
 	      		<hr>
-				<div class="thumbnail">
-					<img src="/static/images/face80x80.jpg" alt="Marcel Newman" class="img-circle">
-				</div><!-- /thumbnail -->
-				<h1>Marcel Newman</h1>
+                <h1>Test Light</h1>
+                <div class="switch switch-blue">
+                    <input type="radio" class="switch-input" name="view2" value="week2" id="week2" checked="">
+                    <label for="week2" class="switch-label switch-label-off">Off</label>
+                    <input type="radio" class="switch-input" name="view2" value="month2" id="month2">
+                    <label for="month2" class="switch-label switch-label-on">On</label>
+                    <span class="switch-selection"></span>
+                </div>
+
 				<h3>Madrid, Spain</h3>
 				<br>
 					<div class="info-user">
@@ -142,54 +147,23 @@
               <div class="framemail">
                   <div class="window">
                       <ul class="mail">
-                          <li>
-                              <i class="unread"></i>
-                              <img class="avatar" src="/static/images/photo01.jpeg" alt="avatar">
-                              <p class="sender">Adam W.</p>
-                              <p class="message"><strong>Working</strong> - This is the last...</p>
-                              <div class="actions">
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/undo.png" alt="reply"></a>
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/star_fav.png" alt="favourite"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/tag.png" alt="label"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/trash.png" alt="delete"></a>
-                              </div>
-                          </li>
-                          <li>
-                              <i class="read"></i>
-                              <img class="avatar" src="/static/images/photo02.jpg" alt="avatar">
-                              <p class="sender">Dan E.</p>
-                              <p class="message"><strong>Hey man!</strong> - You have to taste ...</p>
-                              <div class="actions">
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/undo.png" alt="reply"></a>
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/star_fav.png" alt="favourite"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/tag.png" alt="label"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/trash.png" alt="delete"></a>
-                              </div>
-                          </li>
-                          <li>
-                              <i class="read"></i>
-                              <img class="avatar" src="/static/images/photo03.jpg" alt="avatar">
-                              <p class="sender">Leonard N.</p>
-                              <p class="message"><strong>New Mac :D</strong> - So happy with ...</p>
-                              <div class="actions">
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/undo.png" alt="reply"></a>
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/star_fav.png" alt="favourite"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/tag.png" alt="label"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/trash.png" alt="delete"></a>
-                              </div>
-                          </li>
-                          <li>
-                              <i class="read"></i>
-                              <img class="avatar" src="/static/images/photo04.jpg" alt="avatar">
-                              <p class="sender">Peter B.</p>
-                              <p class="message"><strong>Thank you</strong> - Finally I can ...</p>
-                              <div class="actions">
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/undo.png" alt="reply"></a>
-                                  <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/star_fav.png" alt="favourite"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/tag.png" alt="label"></a>
-                                  <a><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/trash.png" alt="delete"></a>
-                              </div>
-                          </li>
+                          {% for vid in videos %}
+                              <li>
+                                  <i class="unread"></i>
+                                  <img class="avatar" src="/static/images/video.png" alt="avatar">
+                                  <p class="message"><strong>{{ vid['name'] }}</strong></p>
+                                  <div class="actions">
+                                      <a><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/redo.png" alt="preview"></a>
+                                      {% if vid['current'] == True %}
+                                      <a href="/update_video/{{ vid['id'] }}"><img style="background-color: gold" src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/star_fav.png" alt="favourite"></a>
+                                      {% endif %}
+                                      {% if not vid['current'] == False %}
+                                      <a href="/update_video/{{ vid['id'] }}"><img src="http://png-1.findicons.com/files//icons/2232/wireframe_mono/16/star_fav.png" alt="favourite"></a>
+                                      {% endif %}
+                                      <a href="/remove_video/{{ vid['id'] }}"><img src="http://png-4.findicons.com/files//icons/2232/wireframe_mono/16/trash.png" alt="delete"></a>
+                                  </div>
+                              </li>
+                          {% endfor %}
                       </ul>
                   </div>
               </div>
@@ -469,27 +443,6 @@
       
 	  <!-- FOURTH ROW OF BLOCKS -->     
 	<div class="row">
-	
-	  <!-- TWITTER WIDGET BLOCK -->     
-		<div class="col-sm-3 col-lg-3">
-			<div class="dash-unit">
-	      		<dtitle>Twitter Widget</dtitle>
-	      		<hr>
-				<div class="info-user">
-					<span aria-hidden="true" class="li_megaphone fs2"></span>
-				</div>
-				<br>
-		 		<div id="jstwitter" class="clearfix">
-					<ul id="twitter_update_list"></ul>
-				</div>
-				<script src="http://twitter.com/javascripts/blogger.js"></script><!-- Script Needed to load the Tweets -->
-				<script src="http://api.twitter.com/1/statuses/user_timeline/wrapbootstrap.json?callback=twitterCallback2&amp;count=1"></script>
-				<!-- To show your tweets replace "wrapbootstrap", in the line above, with your user. -->
-				<div class="text">
-				<p><grey>Show your tweets here!</grey></p>
-				</div>
-			</div>
-		</div>
 
 	  <!-- NOTIFICATIONS BLOCK -->     
 		<div class="col-sm-3 col-lg-3">
@@ -699,5 +652,4 @@
       		</div><!-- /row -->
       	</div><!-- /container -->		
 	</div><!-- /footerwrap -->
-          
 </body></html>
