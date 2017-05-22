@@ -6,9 +6,12 @@ import RPi.GPIO as GPIO
 import os
 
 app = Flask(__name__)
+local = False
 
-
-UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/videos/'
+if local:
+    UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/videos/'
+else:
+   UPLOAD_FOLDER = "/home/pi/Desktop/Tom\'s\ Project/static/video/"
 ALLOWED_EXTENSIONS = set(['mp3', 'mp4'])
 light_state = False
 exit_flag = False
@@ -30,7 +33,7 @@ def check_for_current():
 
 
 def main_routine():
-    GPIO.setMode(GPIO.BCM)
+    GPIO.setmode(GPIO.BCM)
     GPIO.setup(11, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     GPIO.setup(12, GPIO.OUT)
     vp = VideoPlayer()
@@ -113,6 +116,6 @@ def light_state():
 
 
 if __name__ == '__main__':
-    loop_thread = Thread(target=main_routine())
-    loop_thread.start()
+    #loop_thread = Thread(target=main_routine())
+    #loop_thread.start()
     app.run(host='localhost', port=3000)
