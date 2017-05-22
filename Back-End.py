@@ -1,24 +1,27 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
+from celery import Celery
 from werkzeug.utils import secure_filename
-from threading import Thread
 from VideoPlayer import VideoPlayer
 import RPi.GPIO as GPIO
 import os
 
 app = Flask(__name__)
 local = False
-
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/videos/'
 else:
-   UPLOAD_FOLDER = "/home/pi/Desktop/Tom\'s\ Project/static/video/"
+    UPLOAD_FOLDER = "/home/pi/Desktop/Tom's Project/static/video/"
+
+app.config['CELERY_BROKER_URL'] = 'amqp://'
+app.config['CELERY_RESULT_BACKEND'] = 'amqp://'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+
 ALLOWED_EXTENSIONS = set(['mp3', 'mp4'])
 light_state = False
 exit_flag = False
 current_video = None
-
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 def allowed_file(filename):
@@ -32,6 +35,7 @@ def check_for_current():
         current_video = os.listdir(UPLOAD_FOLDER)[0]
 
 
+@celery.task
 def main_routine():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(11, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -51,6 +55,7 @@ def main_routine():
 
 @app.route('/')
 def dashboard():
+    task = main_routine.apply_async()
     video_list = os.listdir(UPLOAD_FOLDER)
     video_info = {}
     videos = []
@@ -116,6 +121,8 @@ def light_state():
 
 
 if __name__ == '__main__':
-    #loop_thread = Thread(target=main_routine())
-    #loop_thread.start()
-    app.run(host='localhost', port=3000)
+    if local:
+        app.run(host='localhost', port=3000)
+    else:
+
+        app.run(host='0.0.0.0', port=3500)
