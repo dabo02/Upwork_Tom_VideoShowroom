@@ -6,9 +6,9 @@ import RPi.GPIO as GPIO
 import os
 
 app = Flask(__name__)
-local = False
+local = True
 if local:
-    UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/videos/'
+    UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
     UPLOAD_FOLDER = "/home/pi/Desktop/Tom's Project/static/video/"
 
@@ -22,7 +22,11 @@ ALLOWED_EXTENSIONS = set(['mp3', 'mp4'])
 light_state = False
 exit_flag = False
 current_video = None
+preview_video = ''
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(12, GPIO.OUT)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -37,20 +41,17 @@ def check_for_current():
 
 @celery.task
 def main_routine():
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(11, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(12, GPIO.OUT)
     vp = VideoPlayer()
     global current_video
     while True:
-        if GPIO.input(11) and not vp.video_is_playing:
-            GPIO.output(12, 1)
+        if GPIO.input(23) and not vp.video_is_playing:
+            GPIO.output(24, 1)
             check_for_current()
             vp.set_video(current_video)
             vp.play_video()
-        elif not GPIO.input(11) and vp.video_is_playing:
+        elif not GPIO.input(23) and vp.video_is_playing:
                 vp.stop_video()
-                GPIO.output(12, 0)
+                GPIO.output(24, 0)
 
 
 @app.route('/')
@@ -61,6 +62,8 @@ def dashboard():
     videos = []
     i = 0
     global current_video
+    global preview_video
+    global light_state
     for v in video_list:
         if current_video:
             if current_video in v:
@@ -69,11 +72,18 @@ def dashboard():
                 current = False
         else:
             current = False
-        i = i+1
+
+        if preview_video:
+            if preview_video in v:
+                preview = v
+        else:
+            preview = ''
         name = v.rsplit('.', 1)[0]
         video_info = {'name': name, 'id': v, 'current': current}
         videos.append(video_info)
-    return render_template('index.html', videos=videos)
+        i = i+1
+
+    return render_template('index.html', videos=videos, preview=preview, light_state=light_state)
 
 
 @app.route('/upload_video', methods=['POST'])
@@ -101,28 +111,32 @@ def remove_video(id):
 def change_current_video(id):
     new_video = id
     global current_video
-    current_video = UPLOAD_FOLDER + '/' + new_video
+    current_video = new_video
     return redirect(url_for('dashboard'))
 
 
+@app.route('/preview_video/<id>', methods=['GET'])
+def preview_current_video(id):
+    global preview_video
+    preview_video = id
+    return redirect(url_for('dashboard'))
 
-
-@app.route('/light_state', methods=['POST'])
-def light_state():
-    state = request.light_state
-    if state:
-        # TODO set RPI GPIO to HIGH
-        # TODO start video and set lighting a to lighting_lvl and lighting_color
-        return
-    # TODO set RPI GPIO to LOW
-
-    # TODO stop video, reset and turn of lighting
+@app.route('/light_state/<state>', methods=['GET'])
+def light_state(state):
+    global light_state
+    if state in 'True':
+        GPIO.output(24, 1)
+        light_state = True
+        return redirect(url_for('dashboard'))
+    GPIO.output(24, 0)
+    light_state = False
+    return redirect(url_for('dashboard'))
 
 
 
 if __name__ == '__main__':
     if local:
-        app.run(host='localhost', port=3000)
+        app.run(host='localhost', port=3100)
     else:
 
         app.run(host='0.0.0.0', port=3500)
