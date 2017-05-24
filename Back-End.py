@@ -6,11 +6,11 @@ import RPi.GPIO as GPIO
 import os
 
 app = Flask(__name__)
-local = False
+local = True
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
-    UPLOAD_FOLDER='/home/pi/Downloads/' #UPLOAD_FOLDER = "/home/pi/Desktop/Upwork_Tom_VideoShowroom/static/video/"
+    UPLOAD_FOLDER='/home/pi/Downloads/'
 
 app.config['CELERY_BROKER_URL'] = 'amqp://'
 app.config['CELERY_RESULT_BACKEND'] = 'amqp://'
@@ -25,8 +25,8 @@ current_video = None
 preview_video = ''
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(12, GPIO.OUT)
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(24, GPIO.OUT)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -44,14 +44,15 @@ def main_routine():
     vp = VideoPlayer()
     global current_video
     while True:
-        if GPIO.input(23) and not vp.video_is_playing:
-            GPIO.output(24, 1)
-            check_for_current()
-            vp.set_video(current_video)
-            vp.play_video()
-        elif not GPIO.input(23) and vp.video_is_playing:
-                vp.stop_video()
+        if not GPIO.input(23):
+            if not vp.video_is_playing:
                 GPIO.output(24, 0)
+                check_for_current()
+                vp.set_video(current_video)
+                vp.play_video()
+        else:
+            vp.stop_video()
+            GPIO.output(24, 1)
 
 
 @app.route('/')
@@ -97,8 +98,8 @@ def upload_video():
         return redirect(url_for('dashboard'))
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return redirect(url_for('dashboard', filename=filename))
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
 
 
 @app.route('/remove_video/<id>', methods=['GET'])
@@ -133,10 +134,9 @@ def light_state(state):
     return redirect(url_for('dashboard'))
 
 
-
 if __name__ == '__main__':
     if local:
-        app.run(host='localhost', port=3100)
+        app.run(host='localhost', port=3200)
     else:
 
         app.run(host='0.0.0.0', port=3500)

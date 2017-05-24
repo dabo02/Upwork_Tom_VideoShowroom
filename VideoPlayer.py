@@ -17,7 +17,7 @@ class VideoPlayer:
 
     def play_video(self):
         os.system('killall omxplayer.bin')
-        self.player = Popen(['omxplayer', '-b', self.path_to_video])
+        self.player = Popen(['omxplayer', '-b', self.path_to_video], shell=False)
         self.video_is_playing = True
         return True
 
