@@ -10,7 +10,7 @@ local = False
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
-    UPLOAD_FOLDER = "/home/pi/Desktop/Upwork_Tom_VideoShowroom/static/video/"
+    UPLOAD_FOLDER='/home/pi/Downloads/' #UPLOAD_FOLDER = "/home/pi/Desktop/Upwork_Tom_VideoShowroom/static/video/"
 
 app.config['CELERY_BROKER_URL'] = 'amqp://'
 app.config['CELERY_RESULT_BACKEND'] = 'amqp://'
