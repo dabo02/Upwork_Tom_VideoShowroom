@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 import os
 
 app = Flask(__name__)
-local = True
+local = False
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
@@ -36,7 +36,8 @@ def allowed_file(filename):
 def check_for_current():
     global current_video
     if not current_video:
-        current_video = os.listdir(UPLOAD_FOLDER)[0]
+        list_of_videos = os.listdir(UPLOAD_FOLDER)
+        current_video = list_of_videos[0]
 
 
 @celery.task
@@ -44,15 +45,16 @@ def main_routine():
     vp = VideoPlayer()
     global current_video
     while True:
-        if not GPIO.input(23):
+        mag_switch = GPIO.input(23)
+        if not mag_switch:
             if not vp.video_is_playing:
                 GPIO.output(24, 0)
                 check_for_current()
                 vp.set_video(current_video)
                 vp.play_video()
         else:
+            GPIO.output(24,1)
             vp.stop_video()
-            GPIO.output(24, 1)
 
 
 @app.route('/')
