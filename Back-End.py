@@ -10,7 +10,7 @@ local = False
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
-    UPLOAD_FOLDER='/home/pi/Downloads/'
+    UPLOAD_FOLDER='/home/pi/Desktop/Upwork_Tom_VideoShowroom/static/video/'
 
 app.config['CELERY_BROKER_URL'] = 'amqp://'
 app.config['CELERY_RESULT_BACKEND'] = 'amqp://'
@@ -25,7 +25,7 @@ current_video = None
 preview_video = ''
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(24, GPIO.OUT)
 
 def allowed_file(filename):
@@ -43,14 +43,14 @@ def check_for_current():
 @celery.task
 def main_routine():
     vp = VideoPlayer()
-    global current_video
     while True:
         mag_switch = GPIO.input(23)
-        if not mag_switch:
+        if mag_switch:
             if not vp.video_is_playing:
                 GPIO.output(24, 0)
                 check_for_current()
-                vp.set_video(current_video)
+                global current_video
+                vp.set_video(UPLOAD_FOLDER + current_video)
                 vp.play_video()
         else:
             GPIO.output(24,1)
@@ -102,7 +102,7 @@ def upload_video():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-
+        return redirect(url_for('dashboard'))
 
 @app.route('/remove_video/<id>', methods=['GET'])
 def remove_video(id):
