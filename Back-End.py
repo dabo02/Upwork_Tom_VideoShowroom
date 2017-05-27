@@ -6,7 +6,7 @@ from subprocess import Popen
 import os
 
 app = Flask(__name__)
-local = True
+local = False
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
