@@ -2,15 +2,19 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from celery import Celery
 from werkzeug.utils import secure_filename
 from VideoPlayer import VideoPlayer
-import RPi.GPIO as GPIO
+from subprocess import Popen
 import os
 
 app = Flask(__name__)
-local = False
+local = True
 if local:
     UPLOAD_FOLDER = '/home/dabo02/Desktop/Projects/Side_Projects/Upwork_Tom_VideoShowroom/static/video/'
 else:
     UPLOAD_FOLDER='/home/pi/Desktop/Upwork_Tom_VideoShowroom/static/video/'
+    import RPi.GPIO as GPIO
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(24, GPIO.OUT)
 
 app.config['CELERY_BROKER_URL'] = 'amqp://'
 app.config['CELERY_RESULT_BACKEND'] = 'amqp://'
@@ -24,9 +28,6 @@ exit_flag = False
 current_video = None
 preview_video = ''
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(24, GPIO.OUT)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -53,20 +54,19 @@ def main_routine():
                 vp.set_video(UPLOAD_FOLDER + current_video)
                 vp.play_video()
         else:
-            GPIO.output(24,1)
+            GPIO.output(24, 1)
             vp.stop_video()
 
 
 @app.route('/')
 def dashboard():
-    task = main_routine.apply_async()
     video_list = os.listdir(UPLOAD_FOLDER)
     video_info = {}
     videos = []
-    i = 0
     global current_video
     global preview_video
     global light_state
+    preview = ''
     for v in video_list:
         if current_video:
             if current_video in v:
@@ -79,13 +79,10 @@ def dashboard():
         if preview_video:
             if preview_video in v:
                 preview = v
-        else:
-            preview = ''
+
         name = v.rsplit('.', 1)[0]
         video_info = {'name': name, 'id': v, 'current': current}
         videos.append(video_info)
-        i = i+1
-
     return render_template('index.html', videos=videos, preview=preview, light_state=light_state)
 
 
@@ -136,9 +133,29 @@ def light_state(state):
     return redirect(url_for('dashboard'))
 
 
+@app.route('/start')
+def start_loop():
+    task = main_routine.apply_async()
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/reboot')
+def reboot_pi():
+    GPIO.cleanup()
+    Popen('reboot', shell=True)
+    return '<div><h1>Rebooting Pi.....</h1></div>'
+
+
+@app.route('/shutdown')
+def shutdown_pi():
+    GPIO.cleanup()
+    Popen('shutdown -h now', shell=True)
+    return '<div><h1>Shutting Down Pi.....</h1></div>'
+
+
 if __name__ == '__main__':
     if local:
-        app.run(host='localhost', port=3200)
+        app.run(host='localhost', port=3000)
     else:
 
         app.run(host='0.0.0.0', port=3500)

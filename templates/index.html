@@ -132,6 +132,11 @@
                                 <a href="/static/documents/Project_Doc.pdf"><span aria-hidden="true" class="li_pen fs1">Docs</span></a>
                                 <a href="mailto:dabo021213@gmail.com?subject=Support For Tom Ribot"><span aria-hidden="true" class="li_mail fs1">Email</span></a>
                             </div>
+                            <div class="info-user">
+                                <a href="/start"><span aria-hidden="true" class="li_video fs1">Start</span></a>
+                                <a href="/reboot"><span aria-hidden="true" class="li_params fs1">Reboot</span></a>
+                                <a href="/shutdown"><span aria-hidden="true" class="li_params fs1">Shutdown</span></a>
+                            </div>
                         </div>
                     </div>
 
@@ -195,7 +200,7 @@
               <div class="row">
               {% if preview %}
                   <div class="col-sm-4 col-lg-4" align="center">
-                      <video width="854" height="511" controls="controls">
+                      <video width="854" height="511" controls="controls" autoplay>
                           <source src="/static/video/{{ preview }}" type="video/mp3" />
                           <source src="/static/video/{{ preview }}" type="video/mp4" />
                       </video>
